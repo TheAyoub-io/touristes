@@ -25,6 +25,13 @@ model = KNN(n_neighbors=K)
 
 model.fit(X_train, y_train)
 
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Calculate and print the accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy}")
+
 # Save the trained model to a file
 joblib.dump(model, 'recommendation_model.joblib')
     
