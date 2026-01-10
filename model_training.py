@@ -12,7 +12,7 @@ import joblib
 
 # Load the processed data
 
-df = pd.read_csv(r"C:\PFE\PFE\processed_data.csv")
+df = pd.read_csv("processed_data.csv")
 
 # Separate features and target
 
