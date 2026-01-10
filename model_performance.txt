@@ -1,18 +1,18 @@
-Accuracy: 0.7834968956539154
+Accuracy: 0.7868015221309834
 Classification Report:
                 precision    recall  f1-score   support
 
-          Bali       0.70      1.00      0.83       996
-     Barcelone       0.78      0.63      0.69       991
+          Bali       0.71      1.00      0.83       996
+     Barcelone       0.74      0.72      0.73       991
       Le Caire       0.92      1.00      0.96       991
-       Londres       0.89      0.52      0.66      1001
+       Londres       0.90      0.51      0.65      1001
       New York       0.87      0.89      0.88       965
          Paris       0.50      1.00      0.67      1007
-Rio de Janeiro       0.86      0.67      0.75      1010
-          Rome       0.83      0.48      0.61      1015
+Rio de Janeiro       0.87      0.66      0.75      1010
+          Rome       0.94      0.42      0.59      1015
         Sydney       0.96      0.87      0.92       977
-         Tokyo       0.96      0.79      0.87      1033
+         Tokyo       0.97      0.79      0.87      1033
 
-      accuracy                           0.78      9986
-     macro avg       0.83      0.78      0.78      9986
-  weighted avg       0.83      0.78      0.78      9986
+      accuracy                           0.79      9986
+     macro avg       0.84      0.79      0.78      9986
+  weighted avg       0.84      0.79      0.78      9986
