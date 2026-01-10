@@ -16,35 +16,45 @@ y = df['Destination']
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
 from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import LabelEncoder
 
-# Define the parameter grid for RandomForestClassifier
+# Encode the target variable
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train_encoded, y_test_encoded = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
+
+
+# Define the parameter grid for XGBClassifier
 param_grid = {
     'n_estimators': [100, 200, 300],
-    'max_depth': [None, 10, 20, 30],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4]
+    'max_depth': [3, 5, 7],
+    'learning_rate': [0.01, 0.1, 0.2],
+    'subsample': [0.8, 1.0],
+    'colsample_bytree': [0.8, 1.0]
 }
 
-# Initialize the RandomForestClassifier
-rf = RandomForestClassifier(random_state=42)
+# Initialize the XGBClassifier
+xgb_model = xgb.XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='mlogloss')
 
 # Initialize GridSearchCV
-grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
+grid_search = GridSearchCV(estimator=xgb_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
 
 # Fit the grid search to the data
-grid_search.fit(X_train, y_train)
+grid_search.fit(X_train, y_train_encoded)
 
 # Get the best model
 model = grid_search.best_estimator_
 
 # Make predictions on the test set
-y_pred = model.predict(X_test)
+y_pred_encoded = model.predict(X_test)
 
 # Calculate and print the accuracy
-accuracy = accuracy_score(y_test, y_pred)
-report = classification_report(y_test, y_pred)
+accuracy = accuracy_score(y_test_encoded, y_pred_encoded)
+report = classification_report(y_test_encoded, y_pred_encoded, target_names=le.classes_)
 
 # Save the performance to a file
 with open('model_performance.txt', 'w') as f:
