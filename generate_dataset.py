@@ -48,48 +48,31 @@ destination_profiles = {
     }
 }
 
-def get_destination(row):
-    scores = {}
-    for dest, profile in destination_profiles.items():
-        score = 0
-        # Score based on interest
-        if row['Interet'] in profile['Interet']:
-            score += 5
-        # Score based on climate
-        if row['Climat'] in profile['Climat']:
-            score += 3
-        # Score based on age
-        if profile['Age'][0] <= row['Age'] <= profile['Age'][1]:
-            score += 2
-        # Score based on budget
-        if profile['Budget'][0] <= row['Budget'] <= profile['Budget'][1]:
-            score += 2
-        # Score based on duration
-        if profile['Duree'][0] <= row['Duree'] <= profile['Duree'][1]:
-            score += 1
-        scores[dest] = score
+# Generate data from destination profiles
+all_data = []
+for destination, profile in destination_profiles.items():
+    # Add a bit of noise to make the data more robust
+    age_min, age_max = profile['Age']
+    budget_min, budget_max = profile['Budget']
+    duree_min, duree_max = profile['Duree']
 
-    # Add some noise to the scores to make it less deterministic
-    scores_with_noise = {dest: score + np.random.normal(0, 0.5) for dest, score in scores.items()}
+    data = {
+        'Age': np.random.randint(age_min, age_max, size=num_samples),
+        'Budget': np.random.randint(budget_min, budget_max, size=num_samples),
+        'Interet': np.random.choice(profile['Interet'], size=num_samples),
+        'Duree': np.random.randint(duree_min, duree_max, size=num_samples),
+        'Climat': np.random.choice(profile['Climat'], size=num_samples)
+    }
 
-    # Return the destination with the highest score
-    return max(scores_with_noise, key=scores_with_noise.get)
+    df_dest = pd.DataFrame(data)
+    df_dest['Destination'] = destination
+    all_data.append(df_dest)
 
+# Combine all profile data into a single DataFrame
+df = pd.concat(all_data, ignore_index=True)
 
-# Generate synthetic data
-data = {
-    'Age': np.random.randint(18, 70, size=num_samples),
-    'Budget': np.random.randint(500, 5000, size=num_samples),
-    'Interet': np.random.choice(['Culture', 'Nature', 'Aventure', 'Plage', 'Ville'], size=num_samples),
-    'Duree': np.random.randint(2, 30, size=num_samples),
-    'Climat': np.random.choice(['Chaud', 'Froid', 'Tempéré'], size=num_samples)
-}
-
-# Create a DataFrame
-df = pd.DataFrame(data)
-
-# Generate destinations based on the rules
-df['Destination'] = df.apply(get_destination, axis=1)
+# Remove duplicate rows
+df.drop_duplicates(inplace=True)
 
 # Save to CSV
 df.to_csv('tourisme_dataset.csv', index=False)
