@@ -12,7 +12,7 @@ import joblib
 
 # Load the processed data
 
-df = pd.read_csv("C:\PFE\PFE\processed_data.csv")
+df = pd.read_csv(r"C:\PFE\PFE\processed_data.csv")
 
 # Separate features and target
 
@@ -22,16 +22,6 @@ y = df['Destination']
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-
-
-# Initialize and train the RandomForestClassifier model
-
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-
-#K=5
-
-#model = KNN(n_neighbors=K)
 
 
 
@@ -54,7 +44,7 @@ param_grid = {
 }
 
 # Initialize the XGBClassifier
-xgb_model = xgb.XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='mlogloss')
+xgb_model = xgb.XGBClassifier(random_state=42, eval_metric='mlogloss')
 
 # Initialize GridSearchCV
 grid_search = GridSearchCV(estimator=xgb_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
@@ -67,18 +57,6 @@ model = grid_search.best_estimator_
 
 # Make predictions on the test set
 
-
-y_pred = model.predict(X_test)
-
-# Calculate and print the accuracy
-
-accuracy = accuracy_score(y_test, y_pred)
-
-print("Accuracy:", round(accuracy * 100, 2), "%")
-
-# Print the classification report
-
-print(classification_report(y_test, y_pred))
 
 y_pred_encoded = model.predict(X_test)
 
