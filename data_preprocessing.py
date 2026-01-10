@@ -8,6 +8,9 @@ import joblib
 # Load the dataset
 df = pd.read_csv('tourisme_dataset.csv')
 
+# Remove duplicate rows
+df.drop_duplicates(inplace=True)
+
 # Add the new feature
 df['Budget_per_day'] = df['Budget'] / (df['Duree'] + 1e-6)
 
