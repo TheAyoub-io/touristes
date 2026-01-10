@@ -8,13 +8,16 @@ import joblib
 # Load the dataset
 df = pd.read_csv('tourisme_dataset.csv')
 
+# Add the new feature
+df['Budget_per_day'] = df['Budget'] / (df['Duree'] + 1e-6)
+
 # Separate features and target
 X = df.drop('Destination', axis=1)
 y = df['Destination']
 
 # Identify categorical and numerical features
 categorical_features = ['Interet', 'Climat']
-numerical_features = ['Age', 'Budget', 'Duree']
+numerical_features = ['Age', 'Budget', 'Duree', 'Budget_per_day']
 
 # Create preprocessing pipelines for numerical and categorical features
 numerical_transformer = StandardScaler()
