@@ -44,11 +44,11 @@ X_train, X_test, y_train_encoded, y_test_encoded = train_test_split(X, y_encoded
 # Define a simpler parameter grid for XGBClassifier to reduce training time
 
 param_grid = {
-    'n_estimators': [100, 200],
-    'max_depth': [3, 5, 7],
-    'learning_rate': [0.1],
-    'subsample': [1.0],
-    'colsample_bytree': [1.0]
+    'n_estimators': [100, 200, 300],
+    'max_depth': [3, 5, 8],
+    'learning_rate': [0.05, 0.1],
+    'subsample': [0.8, 1.0],
+    'colsample_bytree': [0.8, 1.0]
 }
 
 # Initialize the XGBClassifier
