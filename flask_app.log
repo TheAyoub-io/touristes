@@ -6,7 +6,5 @@
  * Restarting with stat
  * Debugger is active!
  * Debugger PIN: 132-491-319
-127.0.0.1 - - [06/Jan/2026 21:47:08] "GET / HTTP/1.1" 200 -
-/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but RandomForestClassifier was fitted with feature names
-  warnings.warn(
-127.0.0.1 - - [06/Jan/2026 21:47:09] "POST /recommend HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jan/2026 17:05:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jan/2026 17:05:47] "POST /recommend HTTP/1.1" 200 -
