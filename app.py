@@ -2,57 +2,75 @@
 from flask import Flask, render_template, request
 import joblib
 import pandas as pd
+import logging
+from transformers import FeatureCreator
 
 app = Flask(__name__)
 
-# Load the trained model and preprocessor
-model = joblib.load('recommendation_model.joblib')
-preprocessor = joblib.load('preprocessor.joblib')
-le = joblib.load('label_encoder.joblib')
-destinations_df = pd.read_csv('destinations.csv')
+# Configure logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s: %(message)s',
+                    handlers=[logging.FileHandler("flask_app.log"),
+                              logging.StreamHandler()])
+
+# Load the trained model, preprocessor, and label encoder
+try:
+    model = joblib.load('recommendation_model.joblib')
+    preprocessor = joblib.load('preprocessor.joblib')
+    label_encoder = joblib.load('label_encoder.joblib')
+    app.logger.info("Model, preprocessor, and label encoder loaded successfully.")
+except FileNotFoundError as e:
+    app.logger.error(f"Error loading model files: {e}")
+    # Handle the error gracefully, maybe exit or use a fallback
+    model = None
+    preprocessor = None
+    label_encoder = None
 
 @app.route('/')
 def home():
+    """Renders the home page."""
     return render_template('index.html')
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    # Get user input from the form
-    features = {
-        'Age': int(request.form['Age']),
-        'Budget': int(request.form['Budget']),
-        'Interet': request.form['Interet'],
-        'Duree': int(request.form['Duree']),
-        'Climat': request.form['Climat']
-    }
+    """Handles the recommendation request."""
+    if not all([model, preprocessor, label_encoder]):
+        return render_template('index.html', error="Model is not available. Please check server logs.")
 
-    # Create a DataFrame from the user input
-    input_df = pd.DataFrame([features])
+    try:
+        # Get user input from the form and convert to a DataFrame
+        features = {
+            'Age': [int(request.form['Age'])],
+            'Budget': [int(request.form['Budget'])],
+            'Interet': [request.form['Interet']],
+            'Duree': [int(request.form['Duree'])],
+            'Climat': [request.form['Climat']],
+            # The model pipeline requires the destination features, but they are not used for prediction.
+            # We add placeholders for them.
+            'Continent': ['Unknown'],
+            'Cout_de_la_Vie': [0],
+            'Type_Destination': ['Unknown']
+        }
+        input_df = pd.DataFrame(features)
+        app.logger.info(f"Received user input: {features}")
 
-    # Add all destinations for each user
-    input_df = pd.concat([input_df.assign(Destination=dest) for dest in destinations_df['Destination']], ignore_index=True)
+        # 1. Preprocess the input using the saved pipeline
+        # The pipeline handles feature creation and scaling/encoding
+        input_processed = preprocessor.transform(input_df)
 
-    # Merge with destination features
-    input_df = pd.merge(input_df, destinations_df, on='Destination')
+        # 2. Make a single prediction
+        prediction_encoded = model.predict(input_processed)
 
-    # Add new features
-    input_df['Budget_per_day'] = input_df['Budget'] / (input_df['Duree'] + 1e-6)
-    input_df['Budget_Ajuste'] = input_df['Budget_per_day'] / input_df['Cout_de_la_Vie']
-    input_df['Interet_Continent'] = input_df['Interet'] + '_' + input_df['Continent']
+        # 3. Decode the prediction to get the destination name
+        prediction = label_encoder.inverse_transform(prediction_encoded)
 
-    # Preprocess the user input
-    input_processed = preprocessor.transform(input_df)
+        app.logger.info(f"Prediction successful. Recommended destination: {prediction[0]}")
+        return render_template('index.html', recommendation=prediction[0])
 
-    # Make a prediction
-    prediction_encoded = model.predict_proba(input_processed)
-
-    # Get the best destination
-    probabilities = prediction_encoded.diagonal()
-    best_destination_index = probabilities.argmax()
-    prediction = le.classes_[best_destination_index]
-
-
-    return render_template('index.html', recommendation=prediction)
+    except Exception as e:
+        app.logger.error(f"An error occurred during recommendation: {e}", exc_info=True)
+        return render_template('index.html', error="An error occurred while getting your recommendation.")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Use 0.0.0.0 to make it accessible outside the container
+    app.run(host='0.0.0.0', port=5000)

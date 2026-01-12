@@ -1,6 +1,6 @@
 Flask
 pandas
-scikit-learn
+scikit-learn==1.5.0
 joblib
 numpy
 matplotlib

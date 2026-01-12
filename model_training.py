@@ -1,84 +1,82 @@
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
+import numpy as np
+from transformers import FeatureCreator
 
-# Load the datasets
+# --- Main Script ---
+
+# Load and prepare data
 df = pd.read_csv('tourisme_dataset.csv')
 destinations_df = pd.read_csv('destinations.csv')
-
-# Merge the datasets
 df = pd.merge(df, destinations_df, on='Destination')
-
-# Remove duplicate rows
 df.drop_duplicates(inplace=True)
 
-# Add new features
-df['Budget_per_day'] = df['Budget'] / (df['Duree'] + 1e-6)
-df['Budget_Ajuste'] = df['Budget_per_day'] / df['Cout_de_la_Vie']
-df['Interet_Continent'] = df['Interet'] + '_' + df['Continent']
-
-# Separate features and target
+# Separate features (X) and target (y)
 X = df.drop('Destination', axis=1)
 y = df['Destination']
 
-# Identify categorical and numerical features
+# Encode the target variable before splitting
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+joblib.dump(le, 'label_encoder.joblib')
+
+# Split data into training and testing sets to prevent data leakage
+X_train, X_test, y_train_encoded, y_test_encoded = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
+
+# Define column types for preprocessing
 categorical_features = ['Interet', 'Climat', 'Continent', 'Type_Destination', 'Interet_Continent']
 numerical_features = ['Age', 'Budget', 'Duree', 'Budget_per_day', 'Cout_de_la_Vie', 'Budget_Ajuste']
 
-# Create preprocessing pipelines
+# Create preprocessing pipelines for numerical and categorical features
 numerical_transformer = StandardScaler()
 categorical_transformer = OneHotEncoder(handle_unknown='ignore')
 
-# Create preprocessor
+# Create a preprocessor to apply different transformations to different columns
 preprocessor = ColumnTransformer(
     transformers=[
         ('num', numerical_transformer, numerical_features),
         ('cat', categorical_transformer, categorical_features)
-    ])
+    ],
+    remainder='drop' # Drop original columns that are not needed
+)
 
-# Create the full pipeline
-pipeline = Pipeline(steps=[('preprocessor', preprocessor)])
+# Create the full feature engineering and preprocessing pipeline
+full_pipeline = Pipeline(steps=[
+    ('feature_creator', FeatureCreator()),
+    ('preprocessor', preprocessor)
+])
 
-# Fit and transform the data
-X_processed = pipeline.fit_transform(X)
+# Fit the entire pipeline on the training data and save it
+full_pipeline.fit(X_train)
+joblib.dump(full_pipeline, 'preprocessor.joblib')
 
-# Save the preprocessing pipeline
-joblib.dump(pipeline, 'preprocessor.joblib')
+# Transform training and testing data
+X_train_processed = full_pipeline.transform(X_train)
+X_test_processed = full_pipeline.transform(X_test)
 
-# Encode the target variable
-le = LabelEncoder()
-y_encoded = le.fit_transform(y)
-
-# Save the label encoder
-joblib.dump(le, 'label_encoder.joblib')
-
-# Split the data
-X_train, X_test, y_train_encoded, y_test_encoded = train_test_split(X_processed, y_encoded, test_size=0.2, random_state=42)
-
-# Train the model
+# Train the K-Nearest Neighbors model
 model = KNN(n_neighbors=5)
-model.fit(X_train, y_train_encoded)
+model.fit(X_train_processed, y_train_encoded)
+joblib.dump(model, 'recommendation_model.joblib')
 
 # Evaluate the model
-y_pred_encoded = model.predict(X_test)
+y_pred_encoded = model.predict(X_test_processed)
 accuracy = accuracy_score(y_test_encoded, y_pred_encoded)
 report = classification_report(y_test_encoded, y_pred_encoded, target_names=le.classes_)
 
-# Save performance
+# Save performance report
 with open('model_performance.txt', 'w') as f:
-    f.write(f"Accuracy: {accuracy}\n")
+    f.write(f"Accuracy: {accuracy:.4f}\n\n")
     f.write("Classification Report:\n")
     f.write(report)
 
+print("--- Model Performance ---")
 print(report)
-
-# Save the trained model
-joblib.dump(model, 'recommendation_model.joblib')
-
-print("Model training complete.")
+print("Model training, preprocessing pipeline, and label encoder have been saved.")

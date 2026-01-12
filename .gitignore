@@ -1,0 +1,13 @@
+# Log files
+*.log
+
+# Joblib model artifacts
+*.joblib
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Dataset files
+*.csv
+*.txt
