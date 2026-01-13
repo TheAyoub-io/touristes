@@ -10,12 +10,31 @@ import joblib
 import numpy as np
 from transformers import FeatureCreator
 
+import os
+from sqlalchemy import create_engine
+
 # --- Main Script ---
 
-# Load and prepare data
-df = pd.read_csv('tourisme_dataset.csv')
-destinations_df = pd.read_csv('destinations.csv')
-df = pd.merge(df, destinations_df, on='Destination')
+# Load and prepare data from PostgreSQL
+db_url = os.environ.get('DATABASE_URL', 'postgresql://user:password@localhost:5432/recommendation_db')
+engine = create_engine(db_url)
+
+query_tourisme = "SELECT * FROM tourisme_data;"
+query_destinations = "SELECT * FROM destination;"
+
+df_tourisme = pd.read_sql(query_tourisme, engine)
+df_destinations = pd.read_sql(query_destinations, engine)
+
+# Rename columns to match original CSVs for merging
+df_destinations.rename(columns={'name': 'Destination', 'cost_of_living': 'Cout_de_la_Vie', 'destination_type': 'Type_Destination'}, inplace=True)
+df_tourisme.rename(columns={'interest': 'Interet', 'duration': 'Duree', 'climate': 'Climat'}, inplace=True)
+
+# Map destination_id to destination name
+dest_id_to_name = df_destinations.set_index('id')['Destination'].to_dict()
+df_tourisme['Destination'] = df_tourisme['destination_id'].map(dest_id_to_name)
+
+# Merge dataframes
+df = pd.merge(df_tourisme, df_destinations, on='Destination')
 df.drop_duplicates(inplace=True)
 
 # Separate features (X) and target (y)
