@@ -1,8 +1,6 @@
 # Log files
 *.log
 
-# Joblib model artifacts
-*.joblib
 
 # Python cache
 __pycache__/

@@ -6,6 +6,9 @@ numpy
 matplotlib
 seaborn
 xgboost
+psycopg2-binary
+Flask-SQLAlchemy
+Flask-Login
 
 
 #

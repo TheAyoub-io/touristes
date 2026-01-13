@@ -1,80 +1,68 @@
 import pandas as pd
 import numpy as np
 
-# Define the number of samples
-num_samples = 5000
+# Define the number of samples to generate
+num_samples = 20000
 
-# Define destination profiles
+# Define clear profiles for destinations
 destination_profiles = {
-    'Paris': {
-        'Interet': ['Culture', 'Ville'], 'Climat': ['Tempéré'],
-        'Age': (25, 60), 'Budget': (1500, 4000), 'Duree': (5, 15)
-    },
-    'Tokyo': {
-        'Interet': ['Culture', 'Ville', 'Aventure'], 'Climat': ['Tempéré'],
-        'Age': (20, 50), 'Budget': (3000, 10000), 'Duree': (7, 20)
-    },
-    'New York': {
-        'Interet': ['Ville', 'Aventure'], 'Climat': ['Tempéré', 'Froid'],
-        'Age': (20, 55), 'Budget': (2500, 10000), 'Duree': (4, 10)
-    },
-    'Bali': {
-        'Interet': ['Nature', 'Plage'], 'Climat': ['Chaud'],
-        'Age': (18, 40), 'Budget': (500, 2500), 'Duree': (7, 21)
-    },
-    'Rome': {
-        'Interet': ['Culture', 'Ville'], 'Climat': ['Tempéré', 'Chaud'],
-        'Age': (25, 65), 'Budget': (1000, 3500), 'Duree': (4, 14)
-    },
-    'Le Caire': {
-        'Interet': ['Culture'], 'Climat': ['Chaud'],
-        'Age': (30, 70), 'Budget': (800, 2000), 'Duree': (6, 12)
-    },
-    'Rio de Janeiro': {
-        'Interet': ['Nature', 'Plage', 'Aventure'], 'Climat': ['Chaud'],
-        'Age': (18, 45), 'Budget': (700, 3000), 'Duree': (5, 15)
-    },
-    'Sydney': {
-        'Interet': ['Nature', 'Plage', 'Ville'], 'Climat': ['Tempéré', 'Chaud'],
-        'Age': (20, 50), 'Budget': (2000, 4500), 'Duree': (10, 25)
-    },
-    'Barcelone': {
-        'Interet': ['Culture', 'Plage', 'Ville'], 'Climat': ['Tempéré', 'Chaud'],
-        'Age': (20, 50), 'Budget': (800, 3000), 'Duree': (3, 10)
-    },
-    'Londres': {
-        'Interet': ['Culture', 'Ville'], 'Climat': ['Tempéré', 'Froid'],
-        'Age': (25, 60), 'Budget': (1500, 4000), 'Duree': (4, 12)
-    }
+    'Paris': {'Interet': 'Culture', 'Climat': 'Tempéré', 'Budget': 3000},
+    'Tokyo': {'Interet': 'Culture', 'Climat': 'Tempéré', 'Budget': 7000},
+    'New York': {'Interet': 'Ville', 'Climat': 'Tempéré', 'Budget': 6000},
+    'Bali': {'Interet': 'Plage', 'Climat': 'Chaud', 'Budget': 1500},
+    'Rome': {'Interet': 'Culture', 'Climat': 'Chaud', 'Budget': 2500},
+    'Le Caire': {'Interet': 'Culture', 'Climat': 'Chaud', 'Budget': 1200},
+    'Rio de Janeiro': {'Interet': 'Plage', 'Climat': 'Chaud', 'Budget': 2000},
+    'Sydney': {'Interet': 'Ville', 'Climat': 'Chaud', 'Budget': 5000},
+    'Barcelone': {'Interet': 'Plage', 'Climat': 'Chaud', 'Budget': 2200},
+    'Londres': {'Interet': 'Ville', 'Climat': 'Froid', 'Budget': 3500}
 }
 
-# Generate data from destination profiles
-all_data = []
-for destination, profile in destination_profiles.items():
-    # Add a bit of noise to make the data more robust
-    age_min, age_max = profile['Age']
-    budget_min, budget_max = profile['Budget']
-    duree_min, duree_max = profile['Duree']
+# Define user feature distributions
+interests = ['Culture', 'Ville', 'Plage', 'Aventure', 'Nature']
+climates = ['Tempéré', 'Chaud', 'Froid']
 
-    data = {
-        'Age': np.random.randint(age_min, age_max, size=num_samples),
-        'Budget': np.random.randint(budget_min, budget_max, size=num_samples),
-        'Interet': np.random.choice(profile['Interet'], size=num_samples),
-        'Duree': np.random.randint(duree_min, duree_max, size=num_samples),
-        'Climat': np.random.choice(profile['Climat'], size=num_samples)
+def get_best_destination(user_profile, dest_profiles):
+    """
+    Calculates a compatibility score between a user and destinations,
+    and returns the best match.
+    """
+    scores = {}
+    for dest, profile in dest_profiles.items():
+        score = 0
+        # Interest match (high importance)
+        if user_profile['Interet'] == profile['Interet']:
+            score += 10
+        # Climate match (medium importance)
+        if user_profile['Climat'] == profile['Climat']:
+            score += 5
+        # Budget proximity (lower importance)
+        budget_diff = abs(user_profile['Budget'] - profile['Budget'])
+        score += max(0, 5 - budget_diff / 500) # Score decreases as budget difference grows
+        scores[dest] = score
+
+    # Return the destination with the highest score
+    return max(scores, key=scores.get)
+
+# Generate user data and assign the best destination
+data = []
+for _ in range(num_samples):
+    user = {
+        'Age': np.random.randint(18, 70),
+        'Budget': np.random.randint(1000, 8000),
+        'Interet': np.random.choice(interests),
+        'Duree': np.random.randint(3, 21),
+        'Climat': np.random.choice(climates)
     }
 
-    df_dest = pd.DataFrame(data)
-    df_dest['Destination'] = destination
-    all_data.append(df_dest)
+    destination = get_best_destination(user, destination_profiles)
 
-# Combine all profile data into a single DataFrame
-df = pd.concat(all_data, ignore_index=True)
+    user['Destination'] = destination
+    data.append(user)
 
-# Remove duplicate rows
-df.drop_duplicates(inplace=True)
-
-# Save to CSV
+# Create DataFrame and save to CSV
+df = pd.DataFrame(data)
 df.to_csv('tourisme_dataset.csv', index=False)
 
+print(f"Generated {len(df)} unique and consistent travel profiles.")
 print("Dataset 'tourisme_dataset.csv' created successfully.")
