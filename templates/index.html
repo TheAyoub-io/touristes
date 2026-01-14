@@ -34,6 +34,20 @@
             <option value="Tempéré">Tempéré</option>
         </select><br><br>
 
+        <label for="Continent">Continent:</label><br>
+        <select id="Continent" name="Continent" required>
+            {% for continent in continents %}
+            <option value="{{ continent }}">{{ continent }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="Type_Destination">Destination Type:</label><br>
+        <select id="Type_Destination" name="Type_Destination" required>
+            {% for type in destination_types %}
+            <option value="{{ type }}">{{ type }}</option>
+            {% endfor %}
+        </select><br><br>
+
         <input type="submit" value="Get Recommendation">
     </form>
 
