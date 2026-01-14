@@ -135,8 +135,15 @@ def logout():
 @app.route('/')
 def home():
     """Renders the home page."""
-    continents = ['Europe', 'Amerique du Nord', 'Asie', 'Oceanie', 'Afrique', 'Amerique du Sud']
-    destination_types = ['Megalopole', 'Historique', 'Ile']
+    try:
+        destinations_df = pd.read_csv('destinations.csv')
+        continents = destinations_df['Continent'].unique().tolist()
+        destination_types = destinations_df['Type_Destination'].unique().tolist()
+    except FileNotFoundError:
+        app.logger.error("destinations.csv not found. Using default values.")
+        continents = ['Europe', 'Amerique du Nord', 'Asie', 'Oceanie', 'Afrique', 'Amerique du Sud']
+        destination_types = ['Megalopole', 'Historique', 'Ile', 'Culture', 'Plage', 'Nature', 'Aventure']
+
     return render_template('index.html', continents=continents, destination_types=destination_types)
 
 @app.route('/recommend', methods=['POST'])

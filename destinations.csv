@@ -1,11 +1,30 @@
 Destination,Continent,Type_Destination,Cout_de_la_Vie
-Paris,Europe,Megalopole,4
-Barcelone,Europe,Megalopole,3
-Londres,Europe,Megalopole,4
+Paris,Europe,Culture,4
+Barcelone,Europe,Plage,3
+Londres,Europe,Culture,4
 Rome,Europe,Historique,3
+Amsterdam,Europe,Culture,4
+Prague,Europe,Historique,2
+Santorin,Europe,Ile,4
 New York,Amerique du Nord,Megalopole,5
+Los Angeles,Amerique du Nord,Megalopole,4
+Vancouver,Amerique du Nord,Nature,4
+Cancun,Amerique du Nord,Plage,3
 Tokyo,Asie,Megalopole,5
-Sydney,Oceanie,Megalopole,4
-Le Caire,Afrique,Historique,1
-Rio de Janeiro,Amerique du Sud,Megalopole,2
+Kyoto,Asie,Historique,4
 Bali,Asie,Ile,2
+Bangkok,Asie,Megalopole,2
+Dubai,Asie,Megalopole,5
+Sydney,Oceanie,Megalopole,4
+Queenstown,Oceanie,Aventure,4
+Bora Bora,Oceanie,Ile,5
+Le Caire,Afrique,Historique,1
+Marrakech,Afrique,Culture,2
+Le Cap,Afrique,Nature,2
+Zanzibar,Afrique,Ile,2
+Rio de Janeiro,Amerique du Sud,Plage,2
+Machu Picchu,Amerique du Sud,Historique,2
+Buenos Aires,Amerique du Sud,Culture,2
+Patagonie,Amerique du Sud,Aventure,3
+Amazonie,Amerique du Sud,Nature,3
+Iles Galapagos,Amerique du Sud,Nature,4
